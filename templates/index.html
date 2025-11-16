@@ -193,9 +193,15 @@
             
             <form id="export-form">
                 <div class="form-group">
-                    <label for="api_key">AppTweak API Key <span class="required">*</span></label>
-                    <input type="text" id="api_key" name="api_key" required placeholder="Enter your AppTweak API key">
-                    <div class="help-text">Get your API key from your AppTweak dashboard</div>
+                    <label for="api_key">AppTweak API Key {% if not default_api_key %}<span class="required">*</span>{% endif %}</label>
+                    <input type="text" id="api_key" name="api_key" {% if not default_api_key %}required{% endif %} value="{{ default_api_key }}" placeholder="Enter your AppTweak API key">
+                    <div class="help-text">
+                        {% if default_api_key %}
+                            API key is configured. You can override it by entering a different key.
+                        {% else %}
+                            Get your API key from your AppTweak dashboard, or set APPTWEAK_API_KEY environment variable.
+                        {% endif %}
+                    </div>
                 </div>
                 
                 <div class="form-row">

@@ -6,6 +6,7 @@ Flask Web Application for AppTweak to Google Ads Keyword Exporter
 from flask import Flask, render_template, request, send_file, jsonify, session
 import csv
 import io
+import os
 import requests
 from datetime import datetime
 from keyword_exporter import AppTweakKeywordExporter
@@ -17,7 +18,9 @@ app.secret_key = 'your-secret-key-change-this-in-production'  # Change this in p
 @app.route('/')
 def index():
     """Render the main form page."""
-    return render_template('index.html')
+    # Get API key from environment variable if set
+    default_api_key = os.getenv('APPTWEAK_API_KEY', '')
+    return render_template('index.html', default_api_key=default_api_key)
 
 
 @app.route('/api/export', methods=['POST'])
@@ -26,10 +29,10 @@ def export_keywords():
     try:
         data = request.json
         
-        # Validate required fields
-        api_key = data.get('api_key')
+        # Get API key from form or environment variable
+        api_key = data.get('api_key') or os.getenv('APPTWEAK_API_KEY')
         if not api_key:
-            return jsonify({'error': 'API key is required'}), 400
+            return jsonify({'error': 'API key is required. Please enter it in the form or set APPTWEAK_API_KEY environment variable.'}), 400
         
         # Get parameters with defaults
         country = data.get('country', 'us')
