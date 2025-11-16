@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppTweak to Google Ads Keyword Exporter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .form-container {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error.active {
+            display: block;
+        }
+        
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success.active {
+            display: block;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎰 AppTweak to Google Ads</h1>
+            <p>Export casino-related keywords to Google Ads CSV format</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="error" id="error-message"></div>
+            <div class="success" id="success-message"></div>
+            
+            <form id="export-form">
+                <div class="form-group">
+                    <label for="api_key">AppTweak API Key <span class="required">*</span></label>
+                    <input type="text" id="api_key" name="api_key" required placeholder="Enter your AppTweak API key">
+                    <div class="help-text">Get your API key from your AppTweak dashboard</div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <select id="country" name="country">
+                            <option value="us">United States (US)</option>
+                            <option value="gb">United Kingdom (GB)</option>
+                            <option value="ca">Canada (CA)</option>
+                            <option value="au">Australia (AU)</option>
+                            <option value="de">Germany (DE)</option>
+                            <option value="fr">France (FR)</option>
+                            <option value="es">Spain (ES)</option>
+                            <option value="it">Italy (IT)</option>
+                            <option value="jp">Japan (JP)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="language">Language</label>
+                        <select id="language" name="language">
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="it">Italian</option>
+                            <option value="ja">Japanese</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <input type="text" id="category" name="category" value="casino" placeholder="casino">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="limit">Number of Keywords</label>
+                        <input type="number" id="limit" name="limit" value="100" min="1" max="1000">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="campaign">Campaign Name</label>
+                    <input type="text" id="campaign" name="campaign" value="Casino Campaign" placeholder="Casino Campaign">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ad_group">Ad Group Name</label>
+                    <input type="text" id="ad_group" name="ad_group" value="Casino Keywords" placeholder="Casino Keywords">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="match_type">Match Type</label>
+                        <select id="match_type" name="match_type">
+                            <option value="Broad">Broad</option>
+                            <option value="Phrase">Phrase</option>
+                            <option value="Exact">Exact</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="max_cpc">Max CPC (USD)</label>
+                        <input type="text" id="max_cpc" name="max_cpc" value="1.00" placeholder="1.00">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="final_url">Final URL (Optional)</label>
+                    <input type="text" id="final_url" name="final_url" placeholder="https://example.com">
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submit-btn">
+                    Export Keywords to CSV
+                </button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Fetching keywords from AppTweak API...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('export-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('error-message');
+        const successMsg = document.getElementById('success-message');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Hide previous messages
+            errorMsg.classList.remove('active');
+            successMsg.classList.remove('active');
+            
+            // Show loading
+            loading.classList.add('active');
+            submitBtn.disabled = true;
+            
+            // Collect form data
+            const formData = {
+                api_key: document.getElementById('api_key').value,
+                country: document.getElementById('country').value,
+                language: document.getElementById('language').value,
+                category: document.getElementById('category').value,
+                limit: parseInt(document.getElementById('limit').value),
+                campaign: document.getElementById('campaign').value,
+                ad_group: document.getElementById('ad_group').value,
+                match_type: document.getElementById('match_type').value,
+                max_cpc: document.getElementById('max_cpc').value,
+                final_url: document.getElementById('final_url').value
+            };
+            
+            try {
+                const response = await fetch('/api/export', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to export keywords');
+                }
+                
+                // Get the CSV file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `google_ads_keywords_${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // Show success message
+                successMsg.textContent = '✓ Keywords exported successfully! Check your downloads folder.';
+                successMsg.classList.add('active');
+                
+            } catch (error) {
+                errorMsg.textContent = `✗ Error: ${error.message}`;
+                errorMsg.classList.add('active');
+            } finally {
+                loading.classList.remove('active');
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+
